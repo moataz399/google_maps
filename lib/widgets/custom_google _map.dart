@@ -10,20 +10,58 @@ class CustomGoogleMap extends StatefulWidget {
 
 class _CustomGoogleMapState extends State<CustomGoogleMap> {
   late CameraPosition initialCameraPosition;
+  late GoogleMapController googleMapController;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    initialCameraPosition =
-        CameraPosition(target: LatLng(31.42700154326289, 31.649426087876556));
+    initialCameraPosition = const CameraPosition(
+        target: LatLng(
+          31.42700154326289,
+          31.649426087876556,
+        ),
+        zoom: 12);
+  }
+
+  void initMapStyle() async {
+    var nightMapStyle = await DefaultAssetBundle.of(context)
+        .loadString("assets/map_styles/night-map_style.json");
+    googleMapController.setMapStyle(nightMapStyle);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: initialCameraPosition,
+  void dispose() {
+    super.dispose();
+    googleMapController.dispose();
+  }
 
+  Set<Marker> markers = {};
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GoogleMap(
+          markers: markers,
+          onMapCreated: (GoogleMapController controller) {
+            googleMapController = controller;
+            initMapStyle();
+          },
+          initialCameraPosition: initialCameraPosition,
+        ),
+        Positioned(
+          bottom: 100,
+          left: 16,
+          right: 16,
+          child: ElevatedButton(
+            onPressed: () {
+              googleMapController.animateCamera(CameraUpdate.newLatLng(
+                  const LatLng(25.65703109425309, 32.7008381671593)));
+            },
+            child: const Text("change Location "),
+          ),
+        )
+      ],
     );
   }
 }
